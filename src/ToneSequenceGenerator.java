@@ -29,7 +29,7 @@ public class ToneSequenceGenerator {
         if ("record".equals(response)){
             try {
                 // Set up audio format
-                AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 2, 4, 44100, false);
+                AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44000, 16, 2, 4, 44000, false);
 
                 // Open line for playback
                 DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
