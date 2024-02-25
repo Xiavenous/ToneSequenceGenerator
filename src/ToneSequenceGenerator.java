@@ -1,6 +1,8 @@
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.sound.sampled.*;
@@ -57,31 +59,47 @@ public class ToneSequenceGenerator {
 
     private static byte[] generateAudio(AudioFormat format) {
         int sampleRate = (int) format.getSampleRate();
-        byte[] audioData = new byte[sampleRate * format.getFrameSize() * (2 + 1 + 5)]; // 2 seconds of A, 1 second of silence, 5 seconds of B
+        int sampleRateMilli = sampleRate / 1000;
+        int frameSize = format.getFrameSize();
+        byte[] audioData = new byte[frameSize * sampleRateMilli * 4000];
+        // The "4" Comes from:
+        // 0.5 seconds of A, 1 second of silence, 2.5 seconds of B
     
-        // Generate 2 seconds of frequency A (440 Hz)
-        for (int i = 0; i < sampleRate / 2; i++) {
+        // Generate 0.5 seconds of frequency A (440 Hz)
+        for (int i = 0; i < sampleRateMilli * 500; i++) {
             double angle = 2.0 * Math.PI * 440 * i / sampleRate;
             short aSample = (short) (Short.MAX_VALUE * Math.sin(angle));
-            audioData[i * format.getFrameSize()] = (byte) (aSample & 0xFF);
-            audioData[i * format.getFrameSize() + 1] = (byte) ((aSample >> 8) & 0xFF);
+            audioData[i * frameSize] = (byte) (aSample & 0xFF);
+            audioData[i * frameSize + 1] = (byte) ((aSample >> 8) & 0xFF);
         }
     
+        // byte[] auxArray = new byte[audioData.length];
+        // for (int i = 0; i < audioData.length; i++) {
+        //     auxArray[i] = audioData[i];
+        // }
+        // audioData = new byte[auxArray.length + sampleRate * frameSize + 1];
+
         // Generate 1 second of silence
-        for (int i = sampleRate / 2; i < sampleRate * 1.5; i++) {
+        for (int i = sampleRateMilli * 500; i < sampleRateMilli * 1500; i++) {
             for (int j = 0; j < format.getChannels(); j++) {
-                audioData[i * format.getFrameSize() + j] = 0;
+                audioData[i * frameSize + j] = 0;
             }
         }
     
-        // Generate 5 seconds of frequency B (880 Hz)
-        for (int i = (int) (sampleRate * 1.5); i < sampleRate * 4; i++) {
-            double angle = 2.0 * Math.PI * 880 * (i - sampleRate * 3) / sampleRate;
-            short bSample = (short) (Short.MAX_VALUE * Math.sin(angle));
-            audioData[i * format.getFrameSize()] = (byte) (bSample & 0xFF);
-            audioData[i * format.getFrameSize() + 1] = (byte) ((bSample >> 8) & 0xFF);
-        }
+        // auxArray = new byte[audioData.length];
+        // for (int i = 0; i < audioData.length; i++) {
+        //     auxArray[i] = audioData[i];
+        // }
+        // audioData = new byte[auxArray.length + sampleRate * frameSize + ];
     
+        // Generate 2.5 seconds of frequency B (880 Hz)
+        for (int i = (int) (sampleRateMilli * 1500); i < sampleRateMilli * 4000; i++) {
+            double angle = 2.0 * Math.PI * 880 * i / sampleRate;
+            short bSample = (short) (Short.MAX_VALUE * Math.sin(angle));
+            audioData[i * frameSize] = (byte) (bSample & 0xFF);
+            audioData[i * frameSize + 1] = (byte) ((bSample >> 8) & 0xFF);
+        }
+
         return audioData;
     }
 }
